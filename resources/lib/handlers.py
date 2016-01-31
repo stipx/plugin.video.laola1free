@@ -11,7 +11,7 @@ from streaming import Stream
 
 class RequestHandler:
 	def __init__(self, addonhandle, addonbaseurl, parameters, baseurl):
-		self.addonname = 'plugin.video.laola1tv'
+		self.addonname = 'plugin.video.laola1free'
 		self.baseurl = baseurl
 		self.addonhandle = addonhandle
 		self.addonbaseurl = addonbaseurl
