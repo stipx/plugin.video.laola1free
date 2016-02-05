@@ -6,6 +6,7 @@ import string
 import random
 from urlparse import urljoin
 from bs4 import BeautifulSoup
+import logger
 
 class StreamError(Exception):
 	def __init__(self, message):
@@ -16,11 +17,15 @@ class Stream:
 		self.min_bandwidth = min_bandwidth
 		self.max_bandwidth = max_bandwidth
 		
+		logger.info('Get videoplayer url from "{}"', url)
 		url = self.get_videoplayer_url(url)
+		logger.debug('Get stream details url from "{}"', url)
 		url = self.get_details_url(url)
+		logger.debug('Get playlist url from "{}"', url)
 		self.url = self.get_playlist_url(url)
+		logger.debug('Playlist url is "{}"', self.url)
 		
-	def get_videoplayer_url(self, url):	
+	def get_videoplayer_url(self, url):
 		source = urllib2.urlopen(url)
 		soup = BeautifulSoup(source)
 		
@@ -58,6 +63,7 @@ class Stream:
 
 		hdvideourl = 'http://www.laola1.tv/server/hd_video.php?play='+streamid+'&partner='+partnerid+'&portal='+portalid+'&v5ident=&lang='+sprache
 
+		logger.debug('hd_video url is "{}"', hdvideourl) 
 		source = urllib2.urlopen(hdvideourl)
 		soup = BeautifulSoup(source)
 
