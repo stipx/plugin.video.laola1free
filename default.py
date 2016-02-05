@@ -1,9 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 
 from resources.lib.handlers import *
+import resources.lib.logger
 import urlparse
 
-print sys.argv
+logger.info('Starting addon with {}', sys.argv)
 
 addonhandle = int(sys.argv[1])
 addonbaseurl = sys.argv[0]
@@ -21,6 +22,6 @@ elif type == 'block':
 	handler = BlockHandler(addonhandle, addonbaseurl, parameters, baseurl)
 elif type == 'video':
 	handler = VideoHandler(addonhandle, addonbaseurl, parameters, baseurl)
-	
+
 handler.handle()
 handler.finish()

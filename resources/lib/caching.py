@@ -5,6 +5,7 @@ import string
 import json
 import xbmc
 import xbmcvfs
+import logger
 
 class CacheManager:
 	def __init__(self, path):
@@ -19,7 +20,7 @@ class CacheManager:
 				if os.path.isfile(filepath):
 					os.unlink(filepath)
 			except Exception, e:
-				print e
+				logger.warn('Failed to clear cache {}', e)
 
 	def get_filepath(self, idParts):
 		joined = '-'.join(str(e) for e in idParts)
@@ -40,7 +41,7 @@ class CacheManager:
 		if not os.path.isfile(filepath):
 			return None
 			
-		print "Read from " + filepath
+		logger.debug('Read from "{}"', filepath)
 			
 		file = xbmcvfs.File(filepath, 'r')
 		obj = json.load(file)
@@ -49,8 +50,7 @@ class CacheManager:
 		return self.get_child(obj, idParts[len(idPartsNew):])
 		
 	def get_child(self, list, idParts):
-		print "list: " + str(list)
-		print "idparts: " + str(idParts)
+		logger.debug("id: {}, list: {}", idParts, list)
 		
 		if len(list) == 0:
 			return None
