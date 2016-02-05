@@ -8,6 +8,7 @@ from urlparse import urljoin
 from caching import CacheManager
 from extraction import Extractor
 from streaming import Stream
+from streaming import StreamError
 import logger
 
 class RequestHandler:
@@ -51,13 +52,13 @@ class RequestHandler:
 			if 'resource:' in image:
 				image = xbmc.translatePath('special://home/addons/' + self.addonname + '/resources/' + image[9:])
 
-		li = xbmcgui.ListItem(folder['label'], iconImage=image)
+		li = xbmcgui.ListItem(folder['label'], thumbnailImage=image, iconImage='DefaultFolder.png')
 		xbmcplugin.addDirectoryItem(handle=self.addonhandle,
 			url=self.build_url({ 'type': folder['type'], 'id': self.full_id(id) }),
 			listitem=li, isFolder=True)
 
 	def add_video(self, video):
-		li = xbmcgui.ListItem(video['label'], iconImage=video['image'])
+		li = xbmcgui.ListItem(video['label'], thumbnailImage=video['image'], iconImage='DefaultVideo.png')
 		li.setProperty("IsPlayable","true")
 		xbmcplugin.addDirectoryItem(handle=self.addonhandle,
 			url=self.build_url({ 'type': 'video', 'url': video['url'] }),
@@ -86,7 +87,7 @@ class RequestHandler:
 		logger.error('handle() method not overridden!')
 
 	def finish(self):
-		xbmcplugin.endOfDirectory(self.addonhandle)
+		xbmcplugin.endOfDirectory(self.addonhandle, True, True, False)
 
 
 class ChannelHandler(RequestHandler):
@@ -133,8 +134,12 @@ class BlockHandler(RequestHandler):
 
 class VideoHandler(RequestHandler):
 	def handle(self):
-		stream = Stream(self.url)
-		#print 'Playlist: ' + stream.get_playlist()
-		li = xbmcgui.ListItem(path=stream.get_url())
-		li.setInfo( type="Video", infoLabels={ "Title": stream.get_title() } )
-		xbmcplugin.setResolvedUrl(self.addonhandle, True, li)
+		try:
+			stream = Stream(self.url)
+			#print 'Playlist: ' + stream.get_playlist()
+			li = xbmcgui.ListItem(path=stream.get_url())
+			li.setInfo( type="Video", infoLabels={ "Title": stream.get_title() } )
+			xbmcplugin.setResolvedUrl(self.addonhandle, True, li)
+		except StreamError as e:
+			xbmcgui.Dialog().ok('Error', e.message)
+			xbmcplugin.setResolvedUrl(self.addonhandle, False, xbmcgui.ListItem())

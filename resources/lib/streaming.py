@@ -7,6 +7,10 @@ import random
 from urlparse import urljoin
 from bs4 import BeautifulSoup
 
+class StreamError(Exception):
+	def __init__(self, message):
+		self.message = message
+
 class Stream:
 	def __init__(self, url, min_bandwidth = 0, max_bandwidth = 999999999):
 		self.min_bandwidth = min_bandwidth
@@ -16,14 +20,29 @@ class Stream:
 		url = self.get_details_url(url)
 		self.url = self.get_playlist_url(url)
 		
-	def get_videoplayer_url(self, url):
+	def get_videoplayer_url(self, url):	
 		source = urllib2.urlopen(url)
 		soup = BeautifulSoup(source)
 		
 		# TODO some more info maybe?
 		self.title = soup.select('title')[0].get_text().strip().encode('utf-8')
 
-		return urljoin(url, soup.select('.videoplayer iframe')[0]['src'])
+		iframes = soup.select('.videoplayer iframe')
+		
+		if len(iframes) == 0:
+			raise StreamError(self.find_error_reason(soup))
+		
+		return urljoin(url, iframes[0]['src'])
+		
+	def find_error_reason(self, soup):
+		countdown = soup.select('.videoplayer-overlay .countdown p')
+		if countdown:
+			return 'Stream not yet started![CR]Stream start: ' + countdown[0].get_text().strip().encode('utf-8')
+			
+		if not 'LAOLA1.tv' in self.title:
+			return 'Stream not supported:[CR]' + self.title
+			
+		return 'Videoplayer not found!'
 		
 	def get_details_url(self, url):
 		source = urllib2.urlopen(url)
