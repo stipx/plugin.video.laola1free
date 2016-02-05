@@ -3,23 +3,25 @@
 import urllib2
 import string
 import time
+import re
 from urlparse import urljoin
 from bs4 import BeautifulSoup
+import logger
 
 class Extractor:
 	def __init__(self, baseurl):
 		self.baseurl = baseurl
-		
+
 	def get_soup(self):
 		source = urllib2.urlopen(self.baseurl)
 		return BeautifulSoup(source)
-		
+
 	def get_text(self, item):
 		return item.get_text().strip().encode('utf-8')
-		
+
 	def get_url(self, url):
 		return urljoin(self.baseurl, url.encode('utf-8'))
-		
+
 	def determine_icon(self, s):
 		if 'volley' in s or 'handball' in s:
 			return 'resource:icons/volleyball.png'
@@ -36,8 +38,7 @@ class Extractor:
 		if 'all' in s:
 			return 'resource:icons/gymnastics.png'
 		return 'DefaultFolder.png'
-		
-		
+
 	def extract_channels(self, nodes):
 		items = []
 		for child in nodes:
@@ -49,55 +50,62 @@ class Extractor:
 						'children': children,
 						'type': 'channel'
 					}
-					
+
 					if child.span.i:
 						item['image'] = self.determine_icon(' '.join(child.span.i['class']))
-					
+						logger.debug('Using {} as icon for {}', item['image'], item['label'])
+
 					items.append(item)
 					continue
 
 			if child.a is not None:
 				link = child.a
-				
+
 				item = {
 					'label': self.get_text(link),
 					'url': self.get_url(link['href']),
 					'type': 'channel'
 				}
-				
+
 				if link.img:
 					item['image'] = self.get_url(link.img['src'])
-				
+					logger.debug('Using {} as icon for {}', item['image'], item['label'])
+
 				items.append(item)
 
 		return items
-		
+
 	def extract_live_block(self, parent):
 		link = parent.select('.meta a.live')[0]
-		
+
 		return {
 			'label': self.get_text(link.span) + ' ([COLOR red]' + self.get_text(link.i) + '[/COLOR])',
 			'type': 'live-block',
 			'url': self.get_url(link['href'])
 		}
-		
+
 	def extract_blocks(self, parent):
 		list = []
 		for node in parent.select('.teaser-wrapper'):
 			title = node.select('.teaser-title')[0]
-			
-			if title.a is not None:
-				list.append({
+
+			if title.a is not None and title.a.h2 is not None:
+				item = {
 					'label': self.get_text(title.a.h2),
 					'url': self.get_url(title.a['href']),
-					'image': self.get_url(node.select('.teaser-list .teaser img')[0]['src']),
 					'type': 'block'
-				})
+				}
+
+				imagenode = self.first(node, '.teaser-list .teaser img')
+				if imagenode:
+					item['image'] = self.get_url(imagenode['src'])
+
+				list.append(item)
 				continue
-				
+
 			if title.h2 is not None:
 				children = self.extract_videos(node)
-					
+
 				if children:
 					list.append({
 						'label': self.get_text(title.h2),
@@ -105,23 +113,23 @@ class Extractor:
 						'image': self.get_url(node.select('.teaser-list .teaser img')[0]['src']),
 						'type': 'block'
 					})
-					
+
 		return list
-		
+
 	def extract_live_videos(self, parent):
 		list = []
 		for item in parent.select('.list-day .item'):
 			h2s = item.select('.heading h2')
 			if not h2s:
 				continue
-			
+
 			datas = item.select('.badge a > span')
-			
+
 			if not datas:
 				continue;
-				
+
 			data = datas[0]
-			
+
 			if int(data['data-sstatus'].encode('utf-8')) == 4:
 				date = '[COLOR red]LIVE[/COLOR] - '
 			else:
@@ -129,16 +137,16 @@ class Extractor:
 				date = data['data-nstreamstart'].encode('utf-8')
 				datetime = time.strptime(date, '%Y-%m-%d-%H-%M-%S')
 				date = '[B]' + time.strftime('%a, %H:%M', datetime) + '[/B] - '
-				
+
 			list.append({
 				'label': date + self.get_text(h2s[0]),
 				'url': self.get_url(item.select('a')[0]['href']),
 				'image': self.get_url(item.select('.logo img')[0]['src']),
 				'type': 'video'
 			})
-				
+
 		return list
-		
+
 	def extract_next_page_link(self, parent):
 		nexts = parent.select('.paging .next')
 		if nexts and 0 < len(nexts):
@@ -147,15 +155,15 @@ class Extractor:
 				'url': self.get_url(nexts[0].find_parent('a')['href']),
 				'type': 'block'
 			}
-			
+
 		return None
-		
+
 	def extract_videos(self, parent):
 		children = []
 		for teaser in parent.select('.teaser-list .teaser a'):
 			badge = teaser.select('.badge')[0]
 			date = self.get_text(badge)
-			
+
 			if 'live' in badge['class']:
 				# Fri 19.02.2016  19:10
 				date = date[4:]
@@ -165,35 +173,62 @@ class Extractor:
 				# 10.01.2016
 				datetime = time.strptime(self.get_text(badge), '%d.%m.%Y')
 				starttime = ''
-			
+
 			date = '[B]' + time.strftime('%a, %d.%m.%Y', datetime) + '[/B] - '
-		
+
 			children.append({
 				'label': date + self.get_text(teaser.find('p', recursive=False)) + starttime,
 				'url': self.get_url(teaser['href']),
 				'image': self.get_url(teaser.select('img')[0]['src']),
 				'type': 'video'
 			})
-				
+
 		return children
-	
+
+	def first(self, parent, selector):
+		nodes = parent.select(selector)
+
+		if len(nodes) == 0:
+			return None
+
+		return nodes[0]
+
+	def minify(self, input):
+		return re.sub('[\r\n ]+', ' ', str(input))
+
 	def get_channels(self):
-		soup = self.get_soup()
-		return [self.extract_live_block(soup)] + self.extract_channels(soup.select('.quick-browse .level1 > li'))
-		
+		try:
+			soup = self.get_soup()
+			return [self.extract_live_block(soup)] + self.extract_channels(soup.select('.quick-browse .level1 > li'))
+		except:
+			logger.error('Failed to extract channels from url "{}" - html: {}', self.baseurl, self.minify(soup))
+			raise
+
 	def get_blocks(self):
-		soup = self.get_soup()
-		return self.extract_blocks(soup)
-		
+		try:
+			soup = self.get_soup()
+			return self.extract_blocks(soup)
+		except:
+			logger.error('Failed to extract blocks from url "{}" - html: {}', self.baseurl, self.minify(soup))
+			raise
+
 	def get_live_videos(self):
-		soup = self.get_soup()
-		return self.extract_live_videos(soup)
-		
+		try:
+			soup = self.get_soup()
+			return self.extract_live_videos(soup)
+		except:
+			logger.error('Failed to extract live videos from url "{}" - html: {}', self.baseurl, self.minify(soup))
+			raise
+
 	def get_videos(self):
-		soup = self.get_soup()
-		videos = self.extract_videos(soup)
-		next = self.extract_next_page_link(soup)
-		if next:
-			videos.append(next)
-			
-		return videos
+		try:
+			soup = self.get_soup()
+			videos = self.extract_videos(soup)
+			next = self.extract_next_page_link(soup)
+			if next:
+				videos.append(next)
+
+			return videos
+		except:
+			logger.error('Failed to extract videos from url "{}" - html: {}', self.baseurl, self.minify(soup))
+			raise
