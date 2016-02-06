@@ -12,8 +12,8 @@ from streaming import StreamError
 import logger
 
 class RequestHandler:
-	def __init__(self, addonhandle, addonbaseurl, parameters, baseurl):
-		self.addonname = 'plugin.video.laola1free'
+	def __init__(self, addonhandle, addonname, addonbaseurl, parameters, baseurl):
+		self.addonname = addonname
 		self.baseurl = baseurl
 		self.addonhandle = addonhandle
 		self.addonbaseurl = addonbaseurl
@@ -53,8 +53,12 @@ class RequestHandler:
 				image = xbmc.translatePath('special://home/addons/' + self.addonname + '/resources/' + image[9:])
 
 		li = xbmcgui.ListItem(folder['label'], thumbnailImage=image, iconImage='DefaultFolder.png')
+		parameters = { 'type': folder['type'], 'id': self.full_id(id) }
+		if 'url' in folder:
+			parameters['url'] = folder['url']
+
 		xbmcplugin.addDirectoryItem(handle=self.addonhandle,
-			url=self.build_url({ 'type': folder['type'], 'id': self.full_id(id) }),
+			url=self.build_url(parameters),
 			listitem=li, isFolder=True)
 
 	def add_video(self, video):
@@ -87,7 +91,7 @@ class RequestHandler:
 		logger.error('handle() method not overridden!')
 
 	def finish(self):
-		xbmcplugin.endOfDirectory(self.addonhandle, True, True, False)
+		xbmcplugin.endOfDirectory(self.addonhandle, True, False, False)
 
 
 class ChannelHandler(RequestHandler):
@@ -122,7 +126,10 @@ class BlockHandler(RequestHandler):
 		if self.url is None:
 			block = self.cache_load()
 		else:
-			block = { 'url': url }
+			logger.debug('Load block from "{}"', self.url)
+			block = { 'url': self.url }
+
+		logger.debug('Block: {}', block)
 
 		if 'url' in block:
 			extractor = Extractor(block['url'])

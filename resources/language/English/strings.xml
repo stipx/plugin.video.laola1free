@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30200">General</string>
+	<string id="30204">Location</string>
+	<string id="30205">International</string>
+	<string id="30206">Germany</string>
+	<string id="30207">Austria</string>
+
+	<string id="30211">Language</string>
+	<string id="30212">English</string>
+	<string id="30213">German</string>
+
+	<string id="31101">Debug</string>
+</strings>
