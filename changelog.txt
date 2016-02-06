@@ -1,1 +1,9 @@
+1.0.2
+* Added settings to be able to choose location and language
+* Added error feedback when starting a stream fails
+* Better logging for easier failure analysis
+
+1.0.1
+* Renamed addon from plugin.video.laola1tv to plugin.video.laola1free
+
 1.0.0 Initial Release
