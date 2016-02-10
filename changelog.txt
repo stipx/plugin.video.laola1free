@@ -1,3 +1,6 @@
+1.0.3
+* Fixed logging issues on python versions < 2.7
+
 1.0.2
 * Added settings to be able to choose location and language
 * Added error feedback when starting a stream fails

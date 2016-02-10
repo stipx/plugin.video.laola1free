@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.laola1free" name="Laola1.tv free" version="1.0.2" provider-name="stipx">
+<addon id="plugin.video.laola1free" name="Laola1.tv free" version="1.0.3" provider-name="stipx">
     <requires>
 		<import addon="xbmc.python" version="2.14.0"/>
 		<import addon="script.module.beautifulsoup4" version="4.3.2"/>
