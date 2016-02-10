@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 
+import re
 import xbmc
 
 # LOGDEBUG = 0
@@ -10,6 +11,14 @@ import xbmc
 # LOGSEVERE = 5
 # LOGFATAL = 6
 # LOGNONE = 7
+
+class Counter:
+	def __init__(self):
+		self.count = -1
+
+	def increment(self, matchObject):
+		self.count += 1
+		return '{' + str(self.count) + '}'
 
 def info(message, *arguments):
 	log(message, arguments, xbmc.LOGINFO)
@@ -29,4 +38,14 @@ def warn(message, *arguments):
 	log(message, arguments, xbmc.LOGWARNING)
 
 def log(message, arguments, level):
-	xbmc.log(message.format(*arguments), level)
+	try:
+		try:
+			message = message.format(*arguments)
+		except ValueError:
+			c = Counter()
+			message = re.compile('\\{\\}').sub(c.increment, message).format(*arguments)
+
+		xbmc.log(message, level)
+
+	except:
+		print 'Logging failed: "' + message + '" args: ' + str(arguments)

@@ -6,6 +6,10 @@ import urlparse
 import xbmcaddon
 
 logger.info('Starting addon with {}', sys.argv)
+try:
+	logger.info('Python version: {}.{}.{}', sys.version_info[0], sys.version_info[1], sys.version_info[2])
+except:
+	logger.warn('Python version info could not be loaded')
 
 addonhandle = int(sys.argv[1])
 addonbaseurl = sys.argv[0]
