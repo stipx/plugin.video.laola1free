@@ -62,7 +62,12 @@ class RequestHandler:
 			listitem=li, isFolder=True)
 
 	def add_video(self, video):
-		li = xbmcgui.ListItem(video['label'], thumbnailImage=video['image'], iconImage='DefaultVideo.png')
+		image = 'DefaultVideo.png'
+
+		if 'image' in video:
+			image = video['image']
+
+		li = xbmcgui.ListItem(video['label'], thumbnailImage=image, iconImage='DefaultVideo.png')
 		li.setProperty("IsPlayable","true")
 		xbmcplugin.addDirectoryItem(handle=self.addonhandle,
 			url=self.build_url({ 'type': 'video', 'url': video['url'] }),
@@ -91,7 +96,7 @@ class RequestHandler:
 		logger.error('handle() method not overridden!')
 
 	def finish(self):
-		xbmcplugin.endOfDirectory(self.addonhandle, True, False, False)
+		xbmcplugin.endOfDirectory(self.addonhandle, True, False, True)
 
 
 class ChannelHandler(RequestHandler):

@@ -138,12 +138,17 @@ class Extractor:
 				datetime = time.strptime(date, '%Y-%m-%d-%H-%M-%S')
 				date = '[B]' + time.strftime('%a, %H:%M', datetime) + '[/B] - '
 
-			list.append({
+			video = {
 				'label': date + self.get_text(h2s[0]),
 				'url': self.get_url(item.select('a')[0]['href']),
-				'image': self.get_url(item.select('.logo img')[0]['src']),
 				'type': 'video'
-			})
+			}
+
+			image = self.first(item, '.logo img')
+			if image:
+				video['image'] = self.get_url(image['src'])
+
+			list.append(video)
 
 		return list
 
