@@ -59,7 +59,7 @@ class Stream:
 		portalid = re.compile('portalid: "(.+?)"', re.DOTALL).findall(content)[0]
 		sprache = re.compile('sprache: "(.+?)"', re.DOTALL).findall(content)[0]
 		auth = re.compile('auth = "(.+?)"', re.DOTALL).findall(content)[0]
-		timestamp = ''.join(re.compile('<!-- ([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) -->', re.DOTALL).findall(content)[0])
+		timestamp = ''.join(re.compile('<!--[^0-9]*([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}).*?-->', re.DOTALL).findall(content)[0])
 
 		hdvideourl = 'http://www.laola1.tv/server/hd_video.php?play='+streamid+'&partner='+partnerid+'&portal='+portalid+'&v5ident=&lang='+sprache
 
