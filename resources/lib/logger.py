@@ -12,6 +12,8 @@ import xbmc
 # LOGFATAL = 6
 # LOGNONE = 7
 
+addon_debug_enabled = False
+
 class Counter:
 	def __init__(self):
 		self.count = -1
@@ -21,23 +23,23 @@ class Counter:
 		return '{' + str(self.count) + '}'
 
 def info(message, *arguments):
-	log(message, arguments, xbmc.LOGINFO)
+	log(message, arguments, xbmc.LOGINFO, 'INFO')
 
 def error(message, *arguments):
-	log(message, arguments, xbmc.LOGERROR)
+	log(message, arguments, xbmc.LOGERROR, 'ERROR')
 
 def notice(message, *arguments):
-	log(message, arguments, xbmc.LOGNOTICE)
+	log(message, arguments, xbmc.LOGNOTICE, 'NOTICE')
 
 def debug(message, *arguments):
-	log(message, arguments, xbmc.LOGDEBUG)
+	log(message, arguments, xbmc.LOGDEBUG, 'DEBUG')
 	# maybe write the debug log stuff also in a variable to be able to write
 	# it when the exception gets handled in default.py or add a debug log setting to addon settings
 
 def warn(message, *arguments):
-	log(message, arguments, xbmc.LOGWARNING)
+	log(message, arguments, xbmc.LOGWARNING, 'WARNING')
 
-def log(message, arguments, level):
+def log(message, arguments, level, label):
 	try:
 		try:
 			message = message.format(*arguments)
@@ -45,7 +47,10 @@ def log(message, arguments, level):
 			c = Counter()
 			message = re.compile('\\{\\}').sub(c.increment, message).format(*arguments)
 
-		xbmc.log(message, level)
+		if not addon_debug_enabled:
+			xbmc.log(message, level)
+		else:
+			print label + ' - ' + message
 
 	except:
-		print 'Logging failed: "' + message + '" args: ' + str(arguments)
+		print 'Logging failed ' + label + ': "' + message + '" args: ' + str(arguments)
