@@ -202,32 +202,32 @@ class Extractor:
 		return re.sub('[\r\n ]+', ' ', str(input))
 
 	def get_channels(self):
+		soup = self.get_soup()
 		try:
-			soup = self.get_soup()
 			return [self.extract_live_block(soup)] + self.extract_channels(soup.select('.quick-browse .level1 > li'))
 		except:
 			logger.error('Failed to extract channels from url "{}" - html: {}', self.baseurl, self.minify(soup))
 			raise
 
 	def get_blocks(self):
+		soup = self.get_soup()
 		try:
-			soup = self.get_soup()
 			return self.extract_blocks(soup)
 		except:
 			logger.error('Failed to extract blocks from url "{}" - html: {}', self.baseurl, self.minify(soup))
 			raise
 
 	def get_live_videos(self):
+		soup = self.get_soup()
 		try:
-			soup = self.get_soup()
 			return self.extract_live_videos(soup)
 		except:
 			logger.error('Failed to extract live videos from url "{}" - html: {}', self.baseurl, self.minify(soup))
 			raise
 
 	def get_videos(self):
+		soup = self.get_soup()
 		try:
-			soup = self.get_soup()
 			videos = self.extract_videos(soup)
 			next = self.extract_next_page_link(soup)
 			if next:
