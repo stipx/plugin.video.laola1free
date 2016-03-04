@@ -100,14 +100,23 @@ class RequestHandler:
 
 
 class ChannelHandler(RequestHandler):
+	def fetch_home(self):
+		extractor = Extractor(self.baseurl)
+		channels = extractor.get_channels()
+		self.cache_clear()
+		self.cacheManager.store(channels)
+
+		return channels
+
 	def handle(self):
 		if len(self.idParts) == 0:
-			extractor = Extractor(self.baseurl)
-			channelsOrBlocks = extractor.get_channels()
-			self.cache_clear()
-			self.cache_store(channelsOrBlocks)
+			channelsOrBlocks = self.fetch_home()
 		else:
 			channel = self.cache_load()
+
+			if not channel:
+				self.fetch_home()
+				channel = self.cache_load()
 
 			if 'children' in channel:
 				channelsOrBlocks = channel['children']
