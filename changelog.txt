@@ -1,3 +1,9 @@
+1.1.0
+* Fixed live schedule listing
+* Added more live schedule elements
+* Added Debug option to the settings
+* Fixed vod stream listing because of changed html elements
+
 1.0.5
 * Fixed streams after player changes
 
