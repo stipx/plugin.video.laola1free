@@ -119,23 +119,43 @@ class Extractor:
 	def extract_live_videos(self, parent):
 		list = []
 		for item in parent.select('.list-day .item'):
+			live = False
 			h2s = item.select('.heading h2')
 			if not h2s:
+				logger.debug('No heading found for {}', self.minify(item))
 				continue
 
-			datas = item.select('.badge a > span')
+			datas = item.select('.badge a > div')
 
-			if not datas:
-				continue;
+			if datas:
+				data = datas[0]
 
-			data = datas[0]
-
-			if int(data['data-sstatus'].encode('utf-8')) == 4:
-				date = '[COLOR red]LIVE[/COLOR] - '
+				if int(data['data-sstatus'].encode('utf-8')) == 4:
+					live = True
+					date = '[COLOR red]LIVE[/COLOR] - '
+				else:
+					# 2016-1-30-20-30-00
+					date = data['data-nstreamstart'].encode('utf-8')
+					datetime = time.strptime(date, '%Y-%m-%d-%H-%M-%S')
 			else:
-				# 2016-1-30-20-30-00
-				date = data['data-nstreamstart'].encode('utf-8')
-				datetime = time.strptime(date, '%Y-%m-%d-%H-%M-%S')
+				infos = item.select('.info > dl')
+
+				if not infos:
+					logger.debug('No time information for {}', self.minify(item))
+					continue
+
+				startlabel = infos[0].find(text='Streamstart:')
+				if not startlabel:
+					logger.debug('No start label in {}', self.minify(item))
+					continue;
+
+				start = startlabel.parent.find_next_siblings('dd', limit=1)[0]
+
+				# 19.03.2016 18:00
+				date = self.get_text(start).split(' ', 1)[-1]
+				datetime = time.strptime(date, '%d.%m.%Y %H:%M')
+
+			if not live:
 				date = '[B]' + time.strftime('%a, %H:%M', datetime) + '[/B] - '
 
 			video = {
