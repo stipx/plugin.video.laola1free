@@ -50,7 +50,7 @@ def log(message, arguments, level, label):
 		if not addon_debug_enabled:
 			xbmc.log(message, level)
 		else:
-			print label + ' - ' + message
+			xbmc.log(label + ' - ' + message, xbmc.LOGNOTICE)
 
 	except:
 		print 'Logging failed ' + label + ': "' + message + '" args: ' + str(arguments)
