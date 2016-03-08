@@ -1,3 +1,6 @@
+1.1.1
+* Hopefully fix the debug log option on all systems
+
 1.1.0
 * Fixed live schedule listing
 * Added more live schedule elements
