@@ -166,7 +166,7 @@ class Extractor:
 	def extract_videos(self, parent):
 		children = []
 		for teaser in parent.select('.teaser-list .teaser a'):
-			badge = teaser.select('.badge')[0]
+			badge = self.first(teaser, '.date')
 			date = self.get_text(badge)
 
 			if 'live' in badge['class']:
