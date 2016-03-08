@@ -76,7 +76,7 @@ class Extractor:
 		return items
 
 	def extract_live_block(self, parent):
-		link = parent.select('.meta a.live')[0]
+		link = self.first(parent, '.meta a.live')
 
 		return {
 			'label': self.get_text(link.span) + ' ([COLOR red]' + self.get_text(link.i) + '[/COLOR])',
