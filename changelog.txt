@@ -1,3 +1,7 @@
+1.1.2
+* Explicitly use python html.parser to have deterministic behavior
+* Fix live videos between vod
+
 1.1.1
 * Hopefully fix the debug log option on all systems
 
