@@ -67,8 +67,7 @@ class Stream:
 		hdvideourl = 'http://www.laola1.tv/server/hd_video.php?play='+streamid+'&partner='+partnerid+'&portal='+portalid+'&v5ident=&lang='+sprache
 
 		logger.debug('hd_video url is "{}"', hdvideourl) 
-		source = urllib2.urlopen(hdvideourl)
-		soup = BeautifulSoup(source)
+		soup = self.get_soup(hdvideourl)
 
 		return soup.videoplayer.url.text +'&timestamp='+timestamp+'&auth='+auth
 
