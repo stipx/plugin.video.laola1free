@@ -14,7 +14,7 @@ class Extractor:
 
 	def get_soup(self):
 		source = urllib2.urlopen(self.baseurl)
-		return BeautifulSoup(source)
+		return BeautifulSoup(source, 'html.parser')
 
 	def get_text(self, item):
 		return item.get_text().strip().encode('utf-8')

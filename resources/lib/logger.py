@@ -23,7 +23,7 @@ class Counter:
 		return '{' + str(self.count) + '}'
 
 def info(message, *arguments):
-	log(message, arguments, xbmc.LOGINFO, 'INFO')
+	log(message, arguments, xbmc.LOGNOTICE, 'INFO')
 
 def error(message, *arguments):
 	log(message, arguments, xbmc.LOGERROR, 'ERROR')
