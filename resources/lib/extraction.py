@@ -187,6 +187,9 @@ class Extractor:
 		children = []
 		for teaser in parent.select('.teaser-list .teaser a'):
 			badge = self.first(teaser, '.date')
+			if not badge:
+				badge = self.first(teaser, '.badge')
+
 			date = self.get_text(badge)
 
 			if 'live' in badge['class']:
