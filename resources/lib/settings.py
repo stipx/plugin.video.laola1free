@@ -14,3 +14,7 @@ class Settings:
 
 	def debug(self):
 		return self.addon.getSetting('debug') == 'true'
+
+	def livefilter(self):
+		livefilters = ['all', 'icehockey', 'tabletennis', 'basketball', 'volleyball', 'beachvolley', 'handball']
+		return livefilters[int(self.addon.getSetting('livefilter'))]

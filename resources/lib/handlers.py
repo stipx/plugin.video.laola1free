@@ -134,6 +134,11 @@ class LiveBlockHandler(RequestHandler):
 		extractor = Extractor(block['url'])
 		videos = extractor.get_live_videos()
 
+		livefilter = self.settings.livefilter()
+		logger.debug('Filtering live streams for {}.', livefilter)
+		if livefilter != 'all':
+			videos = [video for video in videos if 'sport' in video and video['sport'] == livefilter]
+
 		self.add_all_entries(videos)
 
 class BlockHandler(RequestHandler):

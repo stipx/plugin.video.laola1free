@@ -168,6 +168,12 @@ class Extractor:
 			if image:
 				video['image'] = self.get_url(image['src'])
 
+			sport = self.first(item, '.sport i[class]')
+			if sport:
+				for cl in sport['class']:
+					if cl.startswith('ico-sports-'):
+						video['sport'] = cl[11:]
+
 			list.append(video)
 
 		return list
