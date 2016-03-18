@@ -12,11 +12,12 @@ from streaming import StreamError
 import logger
 
 class RequestHandler:
-	def __init__(self, addonhandle, addonname, addonbaseurl, parameters, baseurl):
+	def __init__(self, addonhandle, addonname, addonbaseurl, parameters, settings):
 		self.addonname = addonname
-		self.baseurl = baseurl
+		self.baseurl = 'http://www.laola1.tv/' + settings.language() + '-' + settings.location() + '/'
 		self.addonhandle = addonhandle
 		self.addonbaseurl = addonbaseurl
+		self.settings = settings
 		self.cacheManager = CacheManager(xbmc.translatePath('special://home/userdata/addon_data/' + self.addonname + '/cache'))
 
 		self.type = self.get_param(parameters, 'type')
