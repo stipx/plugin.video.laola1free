@@ -4,6 +4,7 @@ import urllib2
 import re
 import string
 import random
+import time
 from urlparse import urljoin
 from bs4 import BeautifulSoup
 import logger
@@ -35,20 +36,22 @@ class Stream:
 		# TODO some more info maybe?
 		self.title = soup.select('title')[0].get_text().strip().encode('utf-8')
 
-		iframes = soup.select('.videoplayer iframe')
+		iframes = soup.select('iframe[src*=player]')
 
-		if len(iframes) == 0:
+		if len(iframes) != 1:
 			raise StreamError(self.find_error_reason(soup))
 
 		return urljoin(url, iframes[0]['src'])
 
 	def find_error_reason(self, soup):
-		countdown = soup.select('.videoplayer-overlay .countdown p')
-		if countdown:
-			return 'Stream not yet started![CR]Stream start: ' + countdown[0].get_text().strip().encode('utf-8')
-
-		if not 'LAOLA1.tv' in self.title:
-			return 'Stream not supported:[CR]' + self.title
+		countdown = soup.select('.live_countdown')
+		print countdown
+		if countdown and countdown[0]['data-nstreamstart']:
+			# 2016-3-19-20-30-00
+			date = countdown[0]['data-nstreamstart'].encode('utf-8')
+			datetime = time.strptime(date, '%Y-%m-%d-%H-%M-%S')
+			date = '[B]' + time.strftime('%a, %H:%M', datetime) + '[/B]'
+			return 'Stream not yet started![CR]Stream start: ' + date
 
 		return 'Videoplayer not found!'
 
@@ -62,7 +65,7 @@ class Stream:
 		portalid = re.compile('portalid: "(.+?)"', re.DOTALL).findall(content)[0]
 		sprache = re.compile('sprache: "(.+?)"', re.DOTALL).findall(content)[0]
 		auth = re.compile('auth = "(.+?)"', re.DOTALL).findall(content)[0]
-		timestamp = ''.join(re.compile('<!--[^0-9]*([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}).*?-->', re.DOTALL).findall(content)[0])
+		timestamp = ''.join(re.compile('<!--.*?([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}).*?-->', re.DOTALL).findall(content)[0])
 
 		hdvideourl = 'http://www.laola1.tv/server/hd_video.php?play='+streamid+'&partner='+partnerid+'&portal='+portalid+'&v5ident=&lang='+sprache
 
