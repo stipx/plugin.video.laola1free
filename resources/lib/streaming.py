@@ -28,7 +28,9 @@ class Stream:
 
 	def get_soup(self, url):
 		source = urllib2.urlopen(url)
-		return BeautifulSoup(source, 'html.parser')
+		soup = BeautifulSoup(source, 'html.parser')
+		soup.current_url = source.geturl()
+		return soup
 
 	def get_videoplayer_url(self, url):
 		soup = self.get_soup(url)
@@ -41,7 +43,7 @@ class Stream:
 		if len(iframes) != 1:
 			raise StreamError(self.find_error_reason(soup))
 
-		return urljoin(url, iframes[0]['src'])
+		return urljoin(soup.current_url, iframes[0]['src'])
 
 	def find_error_reason(self, soup):
 		countdown = soup.select('.live_countdown')
