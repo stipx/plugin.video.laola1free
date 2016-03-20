@@ -1,3 +1,7 @@
+1.1.4
+* Add streaming support for ehftv
+* Add setting for filtering live streams by sport
+
 1.1.3
 * Damn it. I missed one occurrence of wrong BeautifulSoup instantiation
 
