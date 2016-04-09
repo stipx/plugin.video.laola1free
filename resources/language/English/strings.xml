@@ -19,5 +19,11 @@
 	<string id="30306">Beachvolleyball</string>
 	<string id="30307">Handball</string>
 
+	<string id="30400">Live Listing Limit</string>
+	<string id="30401">No limit</string>
+	<string id="30402">3 days</string>
+	<string id="30403">7 days</string>
+	<string id="30404">14 days</string>
+
 	<string id="31101">Debug</string>
 </strings>

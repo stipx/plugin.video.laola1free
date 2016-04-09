@@ -5,6 +5,7 @@
 
 		<setting type="sep"/>
 		<setting id="livefilter" type="enum" lvalues="30301|30302|30303|30304|30305|30306|30307" label="30300" default="0"/>
+		<setting id="livelimit" type="enum" lvalues="30401|30402|30403|30404" label="30400" default="0"/>
 
 		<setting type="sep"/>
 		<setting id="debug" type="bool" label="31101" default="false"/>

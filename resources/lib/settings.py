@@ -18,3 +18,7 @@ class Settings:
 	def livefilter(self):
 		livefilters = ['all', 'icehockey', 'tabletennis', 'basketball', 'volleyball', 'beachvolley', 'handball']
 		return livefilters[int(self.addon.getSetting('livefilter'))]
+
+	def livelimit(self):
+		livelimits = [None, 3, 7, 14]
+		return livelimits[int(self.addon.getSetting('livelimit'))]

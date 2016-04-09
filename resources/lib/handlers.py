@@ -102,7 +102,7 @@ class RequestHandler:
 
 class ChannelHandler(RequestHandler):
 	def fetch_home(self):
-		extractor = Extractor(self.baseurl)
+		extractor = Extractor(self.baseurl, self.settings)
 		channels = extractor.get_channels()
 		self.cache_clear()
 		self.cacheManager.store(channels)
@@ -122,7 +122,7 @@ class ChannelHandler(RequestHandler):
 			if 'children' in channel:
 				channelsOrBlocks = channel['children']
 			else:
-				extractor = Extractor(channel['url'])
+				extractor = Extractor(channel['url'], self.settings)
 				channelsOrBlocks = extractor.get_blocks()
 				self.cache_store(channelsOrBlocks)
 
@@ -131,7 +131,7 @@ class ChannelHandler(RequestHandler):
 class LiveBlockHandler(RequestHandler):
 	def handle(self):
 		block = self.cache_load()
-		extractor = Extractor(block['url'])
+		extractor = Extractor(block['url'], self.settings)
 		videos = extractor.get_live_videos()
 
 		livefilter = self.settings.livefilter()
@@ -152,7 +152,7 @@ class BlockHandler(RequestHandler):
 		logger.debug('Block: {}', block)
 
 		if 'url' in block:
-			extractor = Extractor(block['url'])
+			extractor = Extractor(block['url'], self.settings)
 			videos = extractor.get_videos()
 		else:
 			videos = block['children']

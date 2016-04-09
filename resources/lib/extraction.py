@@ -9,8 +9,9 @@ from bs4 import BeautifulSoup
 import logger
 
 class Extractor:
-	def __init__(self, baseurl):
+	def __init__(self, baseurl, settings):
 		self.baseurl = baseurl
+		self.settings = settings
 
 	def get_soup(self):
 		source = urllib2.urlopen(self.baseurl)
@@ -21,6 +22,13 @@ class Extractor:
 
 	def get_url(self, url):
 		return urljoin(self.baseurl, url.encode('utf-8'))
+
+	def days1970(self, datetime):
+		# days since 1.1.1970 -> close enough
+		return 365 * (datetime.tm_year - 1970) + datetime.tm_yday
+
+	def days_between(self, time1, time2):
+		return self.days1970(time2) - self.days1970(time1)
 
 	def determine_icon(self, s):
 		if 'volley' in s or 'handball' in s:
@@ -117,6 +125,9 @@ class Extractor:
 		return list
 
 	def extract_live_videos(self, parent):
+		now = time.localtime()
+		livelimit = self.settings.livelimit()
+
 		list = []
 		for item in parent.select('.list-day .item'):
 			live = False
@@ -156,7 +167,14 @@ class Extractor:
 				datetime = time.strptime(date, '%d.%m.%Y %H:%M')
 
 			if not live:
-				date = '[B]' + time.strftime('%a, %H:%M', datetime) + '[/B] - '
+				daysfromnow = self.days_between(now, datetime)
+				if livelimit and daysfromnow >= livelimit:
+					break
+
+				if daysfromnow < 7:
+					date = '[B]' + time.strftime('%a, %H:%M', datetime) + '[/B] - '
+				else:
+					date = '[B]' + time.strftime('%a, %d.%m. - %H:%M', datetime) + '[/B] - '
 
 			video = {
 				'label': date + self.get_text(h2s[0]),
