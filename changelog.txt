@@ -1,3 +1,7 @@
+1.1.5
+* Add setting to limit the live listing by days
+* Add football to live filters
+
 1.1.4
 * Add streaming support for ehftv
 * Add setting for filtering live streams by sport
