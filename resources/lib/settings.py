@@ -16,7 +16,7 @@ class Settings:
 		return self.addon.getSetting('debug') == 'true'
 
 	def livefilter(self):
-		livefilters = ['all', 'icehockey', 'tabletennis', 'basketball', 'volleyball', 'beachvolley', 'handball']
+		livefilters = ['all', 'icehockey', 'tabletennis', 'basketball', 'volleyball', 'beachvolley', 'handball', 'football']
 		return livefilters[int(self.addon.getSetting('livefilter'))]
 
 	def livelimit(self):
