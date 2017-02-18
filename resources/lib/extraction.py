@@ -82,9 +82,12 @@ class Extractor:
 
 			if child.a is not None:
 				link = child.a
+				text = self.get_text(link)
+				if not text:
+					continue
 
 				item = {
-					'label': self.get_text(link),
+					'label': text,
 					'url': self.get_url(link['href']),
 					'type': 'channel'
 				}
