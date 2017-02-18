@@ -27,4 +27,7 @@
 	<string id="30404">14 days</string>
 
 	<string id="31101">Debug</string>
+
+	<string id="40200">Experimental</string>
+	<string id="40201">Strip HTML (faster processing)</string>
 </strings>

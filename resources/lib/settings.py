@@ -22,3 +22,6 @@ class Settings:
 	def livelimit(self):
 		livelimits = [None, 3, 7, 14]
 		return livelimits[int(self.addon.getSetting('livelimit'))]
+
+	def htmlstripping(self):
+		return self.addon.getSetting('htmlstripping') == 'true'

@@ -13,9 +13,23 @@ class Extractor:
 		self.baseurl = baseurl
 		self.settings = settings
 
-	def get_soup(self):
-		source = urllib2.urlopen(self.baseurl)
-		return BeautifulSoup(source, 'html.parser')
+	def get_soup(self, additional_remove=None):
+		if self.settings.htmlstripping():
+			remove = r'<head.*</head>|<!--.*?-->|<script.*?</script>|<footer.*?</footer>'
+			if additional_remove:
+				remove = remove + r'|' + additional_remove
+
+			source = urllib2.urlopen(self.baseurl)
+			html = source.read()
+			beforelen = len(html)
+			html = re.sub(r'\s+', ' ', html, flags = re.MULTILINE)
+			html = re.sub(remove, '', html, flags = re.IGNORECASE)
+			logger.debug('HTML data length stripping - before: {} - after: {}', beforelen, len(html))
+
+			return BeautifulSoup(html, 'html.parser')
+		else:
+			logger.debug('No HTML data length stripping')
+			return BeautifulSoup(urllib2.urlopen(self.baseurl), 'html.parser')
 
 	def get_text(self, item):
 		return item.get_text().strip().encode('utf-8')
@@ -249,7 +263,7 @@ class Extractor:
 		return re.sub('[\r\n ]+', ' ', str(input))
 
 	def get_channels(self):
-		soup = self.get_soup()
+		soup = self.get_soup(r'<main.*?</main>')
 		try:
 			return [self.extract_live_block(soup)] + self.extract_channels(soup.select('.quick-browse .level1 > li'))
 		except:
@@ -257,7 +271,7 @@ class Extractor:
 			raise
 
 	def get_blocks(self):
-		soup = self.get_soup()
+		soup = self.get_soup(r'<header.*?</header>')
 		try:
 			return self.extract_blocks(soup)
 		except:
@@ -265,7 +279,7 @@ class Extractor:
 			raise
 
 	def get_live_videos(self):
-		soup = self.get_soup()
+		soup = self.get_soup(r'<header.*?</header>')
 		try:
 			return self.extract_live_videos(soup)
 		except:
@@ -273,7 +287,7 @@ class Extractor:
 			raise
 
 	def get_videos(self):
-		soup = self.get_soup()
+		soup = self.get_soup(r'<header.*?</header>')
 		try:
 			videos = self.extract_videos(soup)
 			next = self.extract_next_page_link(soup)
