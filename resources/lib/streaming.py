@@ -43,7 +43,11 @@ class Stream:
 		if len(iframes) != 1:
 			raise StreamError(self.find_error_reason(soup))
 
-		return urljoin(soup.current_url, iframes[0]['src'])
+		playerurl = iframes[0]['src']
+		if '_hls' in playerurl:
+			playerurl = playerurl.replace('_hls', '')
+
+		return urljoin(soup.current_url, playerurl)
 
 	def find_error_reason(self, soup):
 		countdown = soup.select('.live_countdown')
