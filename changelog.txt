@@ -1,3 +1,6 @@
+1.1.7
+* Fix ehftv streams after major website changes
+
 1.1.6
 * Fix ehftv streams
 * Fix empty list items
