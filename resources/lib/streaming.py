@@ -1,10 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
 
 import urllib2
+import httplib
 import re
 import string
 import random
 import time
+import json
 from urlparse import urljoin
 from bs4 import BeautifulSoup
 import logger
@@ -15,11 +17,10 @@ class StreamError(Exception):
 
 class Stream:
 	def __init__(self, url, min_bandwidth = 0, max_bandwidth = 999999999):
+		self.title = None
 		self.min_bandwidth = min_bandwidth
 		self.max_bandwidth = max_bandwidth
 
-		logger.info('Get videoplayer url from "{}"', url)
-		url = self.get_videoplayer_url(url)
 		logger.debug('Get stream details url from "{}"', url)
 		url = self.get_details_url(url)
 		logger.debug('Get playlist url from "{}"', url)
@@ -32,23 +33,6 @@ class Stream:
 		soup.current_url = source.geturl()
 		return soup
 
-	def get_videoplayer_url(self, url):
-		soup = self.get_soup(url)
-
-		# TODO some more info maybe?
-		self.title = soup.select('title')[0].get_text().strip().encode('utf-8')
-
-		iframes = soup.select('iframe[src*=player]')
-
-		if len(iframes) != 1:
-			raise StreamError(self.find_error_reason(soup))
-
-		playerurl = iframes[0]['src']
-		if '_hls' in playerurl:
-			playerurl = playerurl.replace('_hls', '')
-
-		return urljoin(soup.current_url, playerurl)
-
 	def find_error_reason(self, soup):
 		countdown = soup.select('.live_countdown')
 		if countdown and countdown[0]['data-nstreamstart'] and not countdown[0].find_parent('div', {'class': 'tabcontent'}):
@@ -60,21 +44,84 @@ class Stream:
 
 		return 'Videoplayer not found!'
 
+	def regex_first(self, text, regex):
+		match = re.compile(regex, re.DOTALL).findall(text)
+		if match:
+			return match[0]
+		return None
+
 	def get_details_url(self, url):
 		source = urllib2.urlopen(url)
+		url = source.geturl()
 		content = source.read()
 		source.close()
 
-		streamid = re.compile('streamid: "(.+?)"', re.DOTALL).findall(content)[0]
-		partnerid = re.compile('partnerid: "(.+?)"', re.DOTALL).findall(content)[0]
-		portalid = re.compile('portalid: "(.+?)"', re.DOTALL).findall(content)[0]
-		sprache = re.compile('sprache: "(.+?)"', re.DOTALL).findall(content)[0]
-		auth = re.compile('auth = "(.+?)"', re.DOTALL).findall(content)[0]
+		detailsurl = self.get_details_url_config(url, content)
+		if detailsurl:
+			return detailsurl
+
+		detailsurl = self.get_details_url_default(url, content)
+		if detailsurl:
+			return detailsurl
+
+		soup = BeautifulSoup(content, 'html.parser')
+
+		if not self.title:
+			self.title = soup.select('title')[0].get_text().strip().encode('utf-8')
+
+		iframes = soup.select('iframe[src*=player]')
+
+		if len(iframes) != 1:
+			raise StreamError(self.find_error_reason(soup))
+
+		return self.get_details_url(urljoin(url, iframes[0]['src']))
+
+	def get_details_url_config(self, url, content):
+		configurl = self.regex_first(content, 'configUrl: "(.+?)"')
+		if not configurl:
+			logger.info('"configUrl" not found in "{}"', url)
+			return None
+
+		if not self.title:
+			self.title = self.regex_first(content, '<title>(.+?)</title>')
+
+		videoid = self.regex_first(content, 'videoid: "(.+?)"')
+		partnerid = self.regex_first(content, 'partnerid: "(.+?)"')
+		language = self.regex_first(content, 'language: "(.+?)"')
+
+		configurl = urljoin(url, configurl) + '?videoid=' + videoid + '&partnerid=' + partnerid + '&language=' + language + '&format=iphone'
+		logger.info('Full config url: {}', configurl)
+		source = urllib2.urlopen(configurl)
+		content = json.load(source)
+		source.close()
+
+		logger.info('StreamAccess: {}', content['video']['streamAccess'])
+
+		# Send POST request by passing the second parameter to Request(url, data)
+		source = urllib2.urlopen(urllib2.Request(content['video']['streamAccess'], ''))
+		content = json.load(source)
+		source.close()
+
+		return content['data']['stream-access'][0]
+
+	def get_details_url_default(self, url, content):
+		auth = self.regex_first(content, 'auth = "(.+?)"')
+		if not auth:
+			logger.info('"auth" not found in "{}"', url)
+			return None
+
+		if not self.title:
+			self.title = self.regex_first(content, '<title>(.+?)</title>')
+
+		streamid = self.regex_first(content, 'streamid: "(.+?)"')
+		partnerid = self.regex_first(content, 'partnerid: "(.+?)"')
+		portalid = self.regex_first(content, 'portalid: "(.+?)"')
+		sprache = self.regex_first(content, 'sprache: "(.+?)"')
 		timestamp = ''.join(re.compile('<!--.*?([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}).*?-->', re.DOTALL).findall(content)[0])
 
 		hdvideourl = 'http://www.laola1.tv/server/hd_video.php?play='+streamid+'&partner='+partnerid+'&portal='+portalid+'&v5ident=&lang='+sprache
 
-		logger.debug('hd_video url is "{}"', hdvideourl) 
+		logger.debug('hd_video url is "{}"', hdvideourl)
 		soup = self.get_soup(hdvideourl)
 
 		return soup.videoplayer.url.text +'&timestamp='+timestamp+'&auth='+auth
