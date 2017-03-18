@@ -51,8 +51,7 @@ class Stream:
 
 	def find_error_reason(self, soup):
 		countdown = soup.select('.live_countdown')
-		print countdown
-		if countdown and countdown[0]['data-nstreamstart']:
+		if countdown and countdown[0]['data-nstreamstart'] and not countdown[0].find_parent('div', {'class': 'tabcontent'}):
 			# 2016-3-19-20-30-00
 			date = countdown[0]['data-nstreamstart'].encode('utf-8')
 			datetime = time.strptime(date, '%Y-%m-%d-%H-%M-%S')
