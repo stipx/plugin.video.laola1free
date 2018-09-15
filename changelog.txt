@@ -1,3 +1,6 @@
+1.1.8
+* Fix stream starts on newer Kodi version
+
 1.1.7
 * Fix ehftv streams after major website changes
 
