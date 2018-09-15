@@ -131,6 +131,9 @@ class Stream:
 	def get_playlist_url(self, url):
 		soup = self.get_soup(url)
 
+		if soup.data.token['status'] != '0':
+			raise StreamError(soup.data.token['comment'])
+
 		auth = soup.data.token['auth']
 		url = soup.data.token['url']
 

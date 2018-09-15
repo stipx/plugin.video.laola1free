@@ -70,6 +70,7 @@ class RequestHandler:
 
 		li = xbmcgui.ListItem(video['label'], thumbnailImage=image, iconImage='DefaultVideo.png')
 		li.setProperty("IsPlayable","true")
+		li.setInfo('video', { 'genre': 'Sports' })
 		xbmcplugin.addDirectoryItem(handle=self.addonhandle,
 			url=self.build_url({ 'type': 'video', 'url': video['url'] }),
 			listitem=li, isFolder=False)
@@ -163,10 +164,11 @@ class VideoHandler(RequestHandler):
 	def handle(self):
 		try:
 			stream = Stream(self.url)
-			#print 'Playlist: ' + stream.get_playlist()
 			li = xbmcgui.ListItem(path=stream.get_url())
 			li.setInfo( type="Video", infoLabels={ "Title": stream.get_title() } )
 			xbmcplugin.setResolvedUrl(self.addonhandle, True, li)
 		except StreamError as e:
-			xbmcgui.Dialog().ok('Error', e.message)
-			xbmcplugin.setResolvedUrl(self.addonhandle, False, xbmcgui.ListItem())
+			xbmcgui.Dialog().notification('Laola1', e.message, xbmcgui.NOTIFICATION_ERROR, 5000, True)
+
+	def finish(self):
+		logger.debug('Finishing VideoHandler')
